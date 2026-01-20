@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Festival Manager | Oficina Virtual</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'neon-pink': '#ff00ff',
+                        'neon-green': '#39ff14',
+                        'electric-blue': '#00ffff',
+                        'slate-950': '#020617',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace'],
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #020617;
+            color: #f8fafc;
+            scroll-behavior: smooth;
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .checklist-item {
+            transition: all 0.3s;
+        }
+
+        .checklist-item.checked {
+            background-color: rgba(57, 255, 20, 0.1);
+            border-color: rgba(57, 255, 20, 0.5);
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.1);
+        }
+
+        .checklist-text.checked {
+            color: #39ff14;
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
+        .shop-card {
+            transition: all 0.2s;
+            border: 2px solid #1e293b;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .shop-card:hover {
+            transform: translateY(-5px);
+            border-color: #475569;
+        }
+
+        .shop-card.selected {
+            border-color: #39ff14;
+            background: rgba(57, 255, 20, 0.05);
+            box-shadow: 0 0 20px rgba(57, 255, 20, 0.2);
+        }
+
+        .choice-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+    </style>
+</head>
+
+<body class="antialiased overflow-x-hidden">
+
+    <!-- NAVIGATION -->
+    <div class="fixed top-0 left-0 w-full z-50 bg-slate-950/90 backdrop-blur-md border-b border-white/10 py-3">
+        <div
+            class="max-w-5xl mx-auto flex justify-between items-center px-4 font-mono text-xs md:text-sm text-slate-400 overflow-x-auto">
+            <div class="flex items-center gap-2 cursor-pointer hover:text-white"
+                onclick="document.getElementById('briefing').scrollIntoView()">
+                <span
+                    class="bg-neon-pink text-black font-bold w-5 h-5 flex items-center justify-center rounded-full">1</span>
+                <span>IDEA</span>
+            </div>
+            <div class="h-px bg-slate-800 w-8"></div>
+            <div class="flex items-center gap-2 cursor-pointer hover:text-white"
+                onclick="document.getElementById('design-tips').scrollIntoView()">
+                <span class="border border-slate-500 w-5 h-5 flex items-center justify-center rounded-full">2</span>
+                <span>DISSENY</span>
+            </div>
+            <div class="h-px bg-slate-800 w-8"></div>
+            <div class="flex items-center gap-2 cursor-pointer hover:text-white"
+                onclick="document.getElementById('spotify-section').scrollIntoView()">
+                <span class="border border-slate-500 w-5 h-5 flex items-center justify-center rounded-full">3</span>
+                <span>SPOTIFY</span>
+            </div>
+            <div class="h-px bg-slate-800 w-8"></div>
+            <div class="flex items-center gap-2 cursor-pointer hover:text-white"
+                onclick="document.getElementById('motion-section').scrollIntoView()">
+                <span class="border border-slate-500 w-5 h-5 flex items-center justify-center rounded-full">4</span>
+                <span>VÍDEO</span>
+            </div>
+            <div class="h-px bg-slate-800 w-8"></div>
+            <div class="flex items-center gap-2 cursor-pointer hover:text-white"
+                onclick="document.getElementById('simulator').scrollIntoView()">
+                <span
+                    class="bg-gradient-to-r from-neon-green to-electric-blue text-black font-bold px-2 py-0.5 rounded-full animate-pulse-fast">5.
+                    RPG</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- HERO -->
+    <section class="min-h-[80vh] flex flex-col items-center justify-center relative pt-20">
+        <div
+            class="absolute inset-0 w-full h-full bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]">
+        </div>
+        <div class="z-10 text-center px-4 max-w-4xl fade-in">
+            <span
+                class="inline-block py-1 px-3 rounded-full bg-neon-pink/10 text-neon-pink border border-neon-pink/20 text-sm font-mono mb-6 tracking-wider">PROJECTE
+                FINAL</span>
+            <h1
+                class="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-br from-white via-slate-200 to-slate-500">
+                FESTIVAL <span class="text-neon-green">MANAGER</span>
+            </h1>
+            <p class="text-slate-400 text-xl max-w-2xl mx-auto mb-10">
+                Missió: Branding, Video-Promo i Simulador RPG.
+            </p>
+            <button onclick="document.getElementById('briefing').scrollIntoView({behavior: 'smooth'})"
+                class="px-8 py-4 bg-white text-black font-bold text-lg rounded-full hover:bg-neon-green transition-all shadow-lg flex items-center gap-2 mx-auto">
+                INICIAR MISSIÓ <i data-lucide="play" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </section>
+
+    <!-- CONTENT SECTIONS (Idea to Spotify) -->
+    <section id="briefing" class="py-20 px-4 bg-slate-950 border-t border-slate-900">
+        <div class="max-w-6xl mx-auto fade-in">
+            <h2 class="text-3xl font-bold text-white mb-8 text-center uppercase">A. La Missió</h2>
+            <div class="grid md:grid-cols-4 gap-4">
+                <div class="p-6 bg-slate-900 border border-slate-800 rounded-xl"><i data-lucide="pen-tool"
+                        class="mb-4 text-neon-pink"></i>
+                    <h3 class="font-bold text-white">1. Brand</h3>
+                    <p class="text-slate-400 text-sm">Nom i Logo.</p>
+                </div>
+                <div class="p-6 bg-slate-900 border border-slate-800 rounded-xl"><i data-lucide="mic-2"
+                        class="mb-4 text-neon-green"></i>
+                    <h3 class="font-bold text-white">2. Cartell</h3>
+                    <p class="text-slate-400 text-sm">4 Artistes.</p>
+                </div>
+                <div class="p-6 bg-slate-900 border border-slate-800 rounded-xl"><i data-lucide="video"
+                        class="mb-4 text-electric-blue"></i>
+                    <h3 class="font-bold text-white">3. Motion</h3>
+                    <p class="text-slate-400 text-sm">Story d'Instagram.</p>
+                </div>
+                <div class="p-6 bg-slate-900 border border-slate-800 rounded-xl"><i data-lucide="gamepad-2"
+                        class="mb-4 text-purple-400"></i>
+                    <h3 class="font-bold text-white">4. RPG</h3>
+                    <p class="text-slate-400 text-sm">Simulador de Gestió.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="design-tips" class="py-20 px-4 bg-[#050a14]">
+        <div class="max-w-5xl mx-auto">
+            <h2 class="text-3xl font-bold text-white mb-8">TIPS DE DISSENY</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-slate-900 p-6 rounded border-l-4 border-neon-pink">
+                    <h3 class="font-bold text-white">Jerarquia</h3>
+                    <p class="text-sm text-slate-400">El Cap de Cartell més gran.</p>
+                </div>
+                <div class="bg-slate-900 p-6 rounded border-l-4 border-neon-green">
+                    <h3 class="font-bold text-white">Contrast</h3>
+                    <p class="text-sm text-slate-400">Lletra clara sobre fons fosc.</p>
+                </div>
+                <div class="bg-slate-900 p-6 rounded border-l-4 border-electric-blue">
+                    <h3 class="font-bold text-white">Espai</h3>
+                    <p class="text-sm text-slate-400">Deixa respirar el disseny.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-12 px-4 bg-slate-950 border-y border-slate-900">
+        <div class="max-w-2xl mx-auto bg-black rounded-xl p-8 border border-slate-800">
+            <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-2"><i data-lucide="list-checks"></i>
+                CHECKLIST</h3>
+            <div class="space-y-4" id="checklist-container"></div>
+            <div class="mt-6 h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div id="progress-bar" class="h-full bg-neon-green w-0 transition-all duration-500"></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="spotify-section" class="py-20 px-4 bg-[#020617]">
+        <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+            <div>
+                <h2 class="text-4xl font-bold text-white mb-4">SPOTIFY & QR</h2>
+                <p class="text-slate-400">Comparteix la teva música.</p>
+            </div>
+            <div class="bg-slate-900 p-8 rounded-2xl border border-slate-800">
+                <input type="text" id="qr-input" placeholder="Enganxa enllaç Spotify..."
+                    class="w-full bg-black border border-slate-700 p-3 text-white rounded mb-4">
+                <button onclick="generateQR()"
+                    class="w-full py-2 bg-white text-black font-bold rounded hover:bg-neon-green">Generar QR</button>
+                <div id="qrcode-container" class="bg-white p-4 rounded mt-4 hidden flex justify-center"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- NEW SECTION: MOTION POSTER (Instagram Story) -->
+    <section id="motion-section" class="py-20 px-4 bg-[#050a14] border-t border-slate-900">
+        <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center fade-in">
+            <div
+                class="order-2 md:order-1 bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl relative overflow-hidden group">
+                <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-neon-pink/10 to-transparent">
+                </div>
+                <!-- Mockup of vertical video -->
+                <div
+                    class="w-[200px] h-[350px] bg-black border-4 border-slate-700 mx-auto rounded-3xl relative flex items-center justify-center overflow-hidden">
+                    <span class="text-white font-bold text-2xl animate-pulse">STORY</span>
+                    <i data-lucide="instagram" class="absolute bottom-4 text-white w-6 h-6"></i>
+                </div>
+            </div>
+            <div class="order-1 md:order-2">
+                <span
+                    class="inline-block py-1 px-3 rounded bg-neon-pink/20 text-neon-pink text-xs font-bold font-mono mb-4">NOVA
+                    TASCA DIGITAL</span>
+                <h2 class="text-4xl font-bold text-white mb-4">MOTION POSTER (15s)</h2>
+                <p class="text-slate-400 mb-6">El teu cartell és estàtic. La gent vol vídeo. Fes un <span
+                        class="text-white font-bold">Story d'Instagram</span> amb el PC.</p>
+                <ul class="space-y-4 mb-8">
+                    <li class="flex items-start gap-4">
+                        <i data-lucide="layout-template" class="text-neon-pink flex-shrink-0 mt-1"></i>
+                        <p class="text-slate-300 text-sm">Obre <strong>Canva</strong> i busca "Instagram Story" o "Vídeo
+                            per a mòbil".</p>
+                    </li>
+                    <li class="flex items-start gap-4">
+                        <i data-lucide="image-plus" class="text-neon-pink flex-shrink-0 mt-1"></i>
+                        <p class="text-slate-300 text-sm">Puja el teu Cartell i afegeix <strong>Stickers
+                                Animats</strong> (Foc, Fletxes, "Tickets").</p>
+                    </li>
+                    <li class="flex items-start gap-4">
+                        <i data-lucide="download" class="text-neon-pink flex-shrink-0 mt-1"></i>
+                        <p class="text-slate-300 text-sm">Descarrega en format <strong>MP4</strong> i envia-ho al
+                            professor.</p>
+                    </li>
+                </ul>
+                <button onclick="document.getElementById('simulator').scrollIntoView({behavior: 'smooth'})"
+                    class="px-6 py-3 border border-slate-700 text-white rounded hover:bg-white hover:text-black transition-colors">
+                    FET! ANEM A JUGAR &rarr;
+                </button>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- RPG SIMULATOR (FINAL) -->
+    <section id="simulator" class="min-h-screen py-12 px-4 bg-[#050a14] border-t-2 border-neon-pink mt-20">
+        <div class="max-w-5xl mx-auto">
+            <div class="text-center mb-12">
+                <span class="bg-neon-green text-black px-2 py-1 rounded text-xs font-bold font-mono">FASE FINAL</span>
+                <h2 class="text-5xl font-bold text-white mt-4 mb-2">SIMULADOR RPG</h2>
+                <p class="text-slate-400">Objectiu: Més de <span class="text-neon-green font-bold">50.000€</span> i més
+                    de <span class="text-amber-400 font-bold">3 Estrelles</span>.</p>
+            </div>
+
+            <!-- HUD -->
+            <div id="game-hud"
+                class="hidden sticky top-20 z-40 bg-slate-900/95 backdrop-blur border border-slate-700 rounded-full py-3 px-8 shadow-2xl mb-8 flex justify-between items-center max-w-2xl mx-auto">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl" id="hud-stars-icon">⭐</span>
+                    <span class="text-xl font-bold text-white" id="hud-stars-val">3.5</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-neon-green text-xl font-mono font-bold" id="hud-money">100.000€</span>
+                </div>
+                <div class="text-xs text-electric-blue font-mono uppercase" id="hud-turn">Torn 1/8</div>
+            </div>
+
+            <!-- SCREEN 1: STRATEGY -->
+            <div id="screen-setup"
+                class="visible max-w-lg mx-auto bg-slate-900 border border-slate-700 p-8 rounded-2xl">
+                <h2 class="text-2xl font-bold text-white mb-6 text-center">TRIAR ESTRATÈGIA</h2>
+                <div class="mb-6"><input type="text" id="game-name"
+                        class="w-full bg-black border border-slate-700 p-3 rounded text-white"
+                        placeholder="Nom del Festival..."></div>
+                <div class="space-y-4">
+                    <div class="p-4 border border-slate-700 rounded-lg cursor-pointer bg-slate-950 hover:border-white transition-colors flex justify-between items-center"
+                        onclick="selectTicket('low')">
+                        <div>
+                            <h4 class="font-bold text-white">LOW COST (20€)</h4>
+                            <p class="text-xs text-slate-500">Inici: 80.000€ | Públic Fàcil</p>
+                        </div>
+                        <div class="w-4 h-4 rounded-full border border-slate-500 ticket-radio" id="radio-low"></div>
+                    </div>
+                    <div class="p-4 border border-slate-700 rounded-lg cursor-pointer bg-slate-950 hover:border-electric-blue transition-colors flex justify-between items-center"
+                        onclick="selectTicket('standard')">
+                        <div>
+                            <h4 class="font-bold text-white">STANDARD (50€)</h4>
+                            <p class="text-xs text-slate-500">Inici: 100.000€ | Públic Normal</p>
+                        </div>
+                        <div class="w-4 h-4 rounded-full border border-slate-500 ticket-radio bg-electric-blue"
+                            id="radio-standard"></div>
+                    </div>
+                    <div class="p-4 border border-slate-700 rounded-lg cursor-pointer bg-slate-950 hover:border-neon-pink transition-colors flex justify-between items-center"
+                        onclick="selectTicket('premium')">
+                        <div>
+                            <h4 class="font-bold text-white">PREMIUM (100€)</h4>
+                            <p class="text-xs text-slate-500">Inici: 120.000€ | Públic Exigent</p>
+                        </div>
+                        <div class="w-4 h-4 rounded-full border border-slate-500 ticket-radio" id="radio-premium"></div>
+                    </div>
+                </div>
+                <button onclick="toShop()"
+                    class="w-full py-3 bg-white text-black font-bold rounded mt-6 hover:bg-slate-200">ANAR A
+                    COMPRAR</button>
+            </div>
+
+            <!-- SCREEN 2: SHOP -->
+            <div id="screen-shop" class="hidden max-w-4xl mx-auto">
+                <div class="flex justify-between items-end mb-6">
+                    <h2 class="text-3xl font-bold text-white">LA BOTIGA</h2>
+                    <div class="text-3xl font-mono text-neon-green font-bold" id="shop-budget">100.000€</div>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <div class="shop-card bg-slate-900 p-4 rounded-xl cursor-pointer"
+                        onclick="toggleItem('tent', 15000)">
+                        <div class="text-4xl mb-2">🎪</div>
+                        <div class="font-bold text-white text-sm">CARPA</div>
+                        <div class="text-neon-pink font-mono text-xs">15k</div><input type="checkbox" id="item-tent"
+                            class="hidden">
+                    </div>
+                    <div class="shop-card bg-slate-900 p-4 rounded-xl cursor-pointer"
+                        onclick="toggleItem('water', 10000)">
+                        <div class="text-4xl mb-2">💧</div>
+                        <div class="font-bold text-white text-sm">AIGUA</div>
+                        <div class="text-neon-pink font-mono text-xs">10k</div><input type="checkbox" id="item-water"
+                            class="hidden">
+                    </div>
+                    <div class="shop-card bg-slate-900 p-4 rounded-xl cursor-pointer"
+                        onclick="toggleItem('power', 10000)">
+                        <div class="text-4xl mb-2">⚡</div>
+                        <div class="font-bold text-white text-sm">GENERADOR</div>
+                        <div class="text-neon-pink font-mono text-xs">10k</div><input type="checkbox" id="item-power"
+                            class="hidden">
+                    </div>
+                    <div class="shop-card bg-slate-900 p-4 rounded-xl cursor-pointer"
+                        onclick="toggleItem('security', 10000)">
+                        <div class="text-4xl mb-2">🛡️</div>
+                        <div class="font-bold text-white text-sm">SEGURETAT</div>
+                        <div class="text-neon-pink font-mono text-xs">10k</div><input type="checkbox" id="item-security"
+                            class="hidden">
+                    </div>
+                    <div class="shop-card bg-slate-900 p-4 rounded-xl cursor-pointer"
+                        onclick="toggleItem('sound', 15000)">
+                        <div class="text-4xl mb-2">🔊</div>
+                        <div class="font-bold text-white text-sm">SO PRO</div>
+                        <div class="text-electric-blue font-mono text-xs">15k</div><input type="checkbox"
+                            id="item-sound" class="hidden">
+                    </div>
+                    <div class="shop-card bg-slate-900 p-4 rounded-xl cursor-pointer"
+                        onclick="toggleItem('cleaning', 8000)">
+                        <div class="text-4xl mb-2">🧹</div>
+                        <div class="font-bold text-white text-sm">NETEJA</div>
+                        <div class="text-electric-blue font-mono text-xs">8k</div><input type="checkbox"
+                            id="item-cleaning" class="hidden">
+                    </div>
+                    <div class="shop-card bg-slate-900 p-4 rounded-xl cursor-pointer"
+                        onclick="toggleItem('influencer', 12000)">
+                        <div class="text-4xl mb-2">📱</div>
+                        <div class="font-bold text-white text-sm">INFLUENCERS</div>
+                        <div class="text-electric-blue font-mono text-xs">12k</div><input type="checkbox"
+                            id="item-influencer" class="hidden">
+                    </div>
+                    <div class="shop-card bg-slate-900 p-4 rounded-xl cursor-pointer"
+                        onclick="toggleItem('food', 15000)">
+                        <div class="text-4xl mb-2">🍔</div>
+                        <div class="font-bold text-white text-sm">ZONA FOOD</div>
+                        <div class="text-amber-400 font-mono text-xs">15k</div><input type="checkbox" id="item-food"
+                            class="hidden">
+                    </div>
+                </div>
+                <button onclick="startGame()"
+                    class="w-full py-4 bg-neon-green text-black font-bold text-xl rounded animate-pulse">COMENÇAR
+                    🚀</button>
+            </div>
+
+            <!-- GAME LOOP -->
+            <div id="screen-game" class="hidden max-w-2xl mx-auto mt-10">
+                <div class="bg-slate-900 border border-slate-700 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
+                    <div
+                        class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-neon-pink via-white to-electric-blue">
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mb-2" id="event-title">EVENT</h2>
+                    <p class="text-slate-400 mb-8 text-lg" id="event-desc">...</p>
+                    <div class="space-y-4">
+                        <button onclick="makeChoice('A')"
+                            class="w-full text-left p-4 rounded-lg bg-slate-950 border border-slate-800 hover:border-red-400 group">
+                            <div class="flex justify-between font-bold text-white group-hover:text-red-400"><span
+                                    id="choice-a-text">A</span><span id="choice-a-cost"
+                                    class="text-xs bg-slate-800 px-2 py-1 rounded text-red-300"></span></div>
+                        </button>
+                        <button onclick="makeChoice('B')"
+                            class="w-full text-left p-4 rounded-lg bg-slate-950 border border-slate-800 hover:border-amber-400 group">
+                            <div class="flex justify-between font-bold text-white group-hover:text-amber-400"><span
+                                    id="choice-b-text">B</span><span id="choice-b-cost"
+                                    class="text-xs bg-slate-800 px-2 py-1 rounded text-amber-300"></span></div>
+                        </button>
+                        <button id="btn-choice-c" onclick="makeChoice('C')"
+                            class="choice-btn w-full text-left p-4 rounded-lg bg-slate-950 border border-slate-800 hover:border-neon-green group relative">
+                            <div class="absolute inset-0 bg-slate-950/80 flex items-center justify-center hidden"
+                                id="lock-overlay"><i data-lucide="lock" class="w-4 h-4 text-slate-500"></i></div>
+                            <div class="flex justify-between font-bold text-white group-hover:text-neon-green"><span
+                                    id="choice-c-text">C</span><span id="choice-c-cost"
+                                    class="text-xs bg-slate-800 px-2 py-1 rounded text-neon-green"></span></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESULT -->
+            <div id="screen-result" class="hidden text-center max-w-2xl mx-auto pt-10">
+                <h2 class="text-6xl font-bold mb-4" id="res-title">...</h2>
+                <div class="grid grid-cols-2 gap-4 mb-8">
+                    <div class="bg-slate-900 p-4 rounded">
+                        <div class="text-xs uppercase text-slate-500 font-bold">Diners (Obj: 50k)</div>
+                        <div class="text-3xl font-mono text-neon-green" id="res-money">0€</div>
+                    </div>
+                    <div class="bg-slate-900 p-4 rounded">
+                        <div class="text-xs uppercase text-slate-500 font-bold">Valoració (Obj: 3.0)</div>
+                        <div class="text-3xl font-mono text-amber-400" id="res-stars">0</div>
+                    </div>
+                </div>
+                <button onclick="location.reload()" class="px-8 py-3 bg-white text-black font-bold rounded-full">TORNAR
+                    A PROVAR</button>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        lucide.createIcons();
+        document.querySelectorAll('.fade-in').forEach(el => new IntersectionObserver(e => e.forEach(en => en.isIntersecting && en.target.classList.add('visible')), { threshold: 0.1 }).observe(el));
+
+        // CHECKLIST
+        const tasks = ["Crear compte a Canva", "Dissenyar Logotip", "Esbossar Cartell", "Afegir Data i Lloc", "Crear Playlist Spotify", "Generar QR", "Crear Motion Story (Video)"];
+        const checklistContainer = document.getElementById('checklist-container');
+        tasks.forEach(task => { const div = document.createElement('div'); div.className = "checklist-item flex items-center p-3 rounded-lg border border-slate-800 bg-slate-900 cursor-pointer hover:border-slate-600"; div.innerHTML = `<div class="w-5 h-5 rounded border border-slate-600 mr-3 flex items-center justify-center check-box"><i data-lucide="check" class="w-3 h-3 text-neon-green opacity-0"></i></div><span class="checklist-text text-sm text-slate-300 font-mono">${task}</span>`; div.onclick = () => { div.classList.toggle('checked'); div.querySelector('.check-box i').classList.toggle('opacity-0'); div.querySelector('.checklist-text').classList.toggle('checked'); const pct = Math.round((document.querySelectorAll('.checklist-item.checked').length / tasks.length) * 100); document.getElementById('progress-bar').style.width = pct + '%'; }; checklistContainer.appendChild(div); });
+
+        function generateQR() { new QRCode(document.getElementById('qrcode-container'), { text: document.getElementById('qr-input').value || 'https://spotify.com', width: 150, height: 150 }); document.getElementById('qrcode-container').classList.remove('hidden'); }
+
+        // RPG LOGIC (SAME AS BEFORE)
+        let state = { money: 100000, stars: 3.5, turn: 0, maxTurns: 8, items: [] };
+        const EVENTS = [{ t: "Pluja", d: "Cau un diluvi.", req: "tent", a: { t: "Mullar-se", c: 0, s: -0.5 }, b: { t: "Ponxos", c: 2500, s: 0 }, c: { t: "Super Carpa", c: 0, s: 0.5 } }, { t: "Apagada", d: "Sense llum!", req: "power", a: { t: "Esperar", c: 0, s: -1.0 }, b: { t: "Llogar Generador", c: 3000, s: 0 }, c: { t: "Generador Propi", c: 0, s: 0.5 } }, { t: "Calor", d: "36ºC al sol.", req: "water", a: { t: "Resistir", c: 0, s: -0.5 }, b: { t: "Regalar Aigua", c: 2000, s: 0 }, c: { t: "Punts d'Aigua", c: 0, s: 0.5 } }, { t: "Allau", d: "Empentes.", req: "security", a: { t: "Paler show", c: 0, s: -1.0 }, b: { t: "Seguretat Extra", c: 3000, s: 0 }, c: { t: "Equip Pro", c: 0, s: 0.5 } }, { t: "Micro Roto", d: "No es sent.", req: "sound", a: { t: "Seguir", c: 0, s: -1.0 }, b: { t: "Comprar un", c: 1500, s: 0 }, c: { t: "Micro Recanvi", c: 0, s: 0.5 } }, { t: "Banys", d: "Molta brutícia.", req: "cleaning", a: { t: "Ignorar", c: 0, s: -0.5 }, b: { t: "Neteja Urgent", c: 2000, s: 0 }, c: { t: "Equip Neteja", c: 0, s: 0.5 } }, { t: "Avorrits", d: "Públic 'meh'.", req: "influencer", a: { t: "Música fons", c: 0, s: -0.5 }, b: { t: "DJ", c: 1000, s: 0 }, c: { t: "Show Viral", c: 0, s: 1.0 } }, { t: "Fam", d: "Volen menjar.", req: "food", a: { t: "Mala sort", c: 0, s: -0.5 }, b: { t: "Pizzes", c: 2000, s: 0 }, c: { t: "Zona Foodie", c: -3000, s: 0.5 } }];
+        let currEv = null;
+        function selectTicket(t) { document.querySelectorAll('.ticket-radio').forEach(e => e.classList.remove('bg-electric-blue', 'bg-neon-green')); document.getElementById('radio-' + t).classList.add('bg-electric-blue'); if (t === 'low') { state.money = 80000; state.stars = 4.0; } if (t === 'standard') { state.money = 100000; state.stars = 3.5; } if (t === 'premium') { state.money = 120000; state.stars = 2.5; } }
+        function toShop() { document.getElementById('screen-setup').classList.add('hidden'); document.getElementById('screen-shop').classList.remove('hidden'); updateUI(); }
+        function toggleItem(id, cost) { const cb = document.getElementById('item-' + id); if (cb.checked) { state.money += cost; state.items = state.items.filter(i => i !== id); cb.checked = false; cb.parentElement.classList.remove('selected'); } else { if (state.money >= cost) { state.money -= cost; state.items.push(id); cb.checked = true; cb.parentElement.classList.add('selected'); } else alert("No tens diners!"); } updateUI(); }
+        function startGame() { document.getElementById('screen-shop').classList.add('hidden'); document.getElementById('screen-game').classList.remove('hidden'); document.getElementById('game-hud').classList.remove('hidden'); if (state.items.includes('food')) { state.money += 15000; alert("Ingressos Foodie: +15k!"); } updateUI(); nextTurn(); }
+        function updateUI() { document.getElementById('shop-budget').innerText = state.money.toLocaleString() + '€'; document.getElementById('hud-money').innerText = state.money.toLocaleString() + '€'; document.getElementById('hud-stars-val').innerText = state.stars.toFixed(1); document.getElementById('hud-turn').innerText = `TORN ${state.turn}/8`; }
+        function nextTurn() { if (state.turn >= 8) { endGame(); return; } state.turn++; updateUI(); currEv = EVENTS[Math.floor(Math.random() * EVENTS.length)]; document.getElementById('event-title').innerText = currEv.t; document.getElementById('event-desc').innerText = currEv.d; renderChoice('a', currEv.a); renderChoice('b', currEv.b); renderChoice('c', currEv.c, currEv.req); }
+        function renderChoice(id, d, req) { document.getElementById(`choice-${id}-text`).innerText = d.t; let cCost = d.c <= 0 ? (d.c < 0 ? "+" + Math.abs(d.c) : "0") : "-" + d.c; let cStar = d.s > 0 ? "+" + d.s : d.s; document.getElementById(`choice-${id}-cost`).innerText = `${cCost}€ | ${cStar}⭐`; if (id === 'c') { const lk = document.getElementById('lock-overlay'); const btn = document.getElementById('btn-choice-c'); if (state.items.includes(req)) { lk.classList.add('hidden'); btn.disabled = false; } else { lk.classList.remove('hidden'); btn.disabled = true; } } }
+        function makeChoice(ch) { const d = ch === 'A' ? currEv.a : ch === 'B' ? currEv.b : currEv.c; state.money -= d.c; state.stars += d.s; if (state.stars > 5) state.stars = 5; if (state.stars < 0) state.stars = 0; nextTurn(); }
+        function endGame() { document.getElementById('screen-game').classList.add('hidden'); document.getElementById('game-hud').classList.add('hidden'); document.getElementById('screen-result').classList.remove('hidden'); const wM = state.money >= 50000; const wS = state.stars >= 3.0; const won = wM && wS; document.getElementById('res-title').innerText = won ? "VICTORY ROYALE! 🏆" : "GAME OVER 💀"; document.getElementById('res-money').innerText = state.money.toLocaleString() + '€'; document.getElementById('res-stars').innerText = state.stars.toFixed(1); if (won) confetti({ particleCount: 300 }); }
+    </script>
+</body>
+
+</html>
